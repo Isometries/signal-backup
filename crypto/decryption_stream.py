@@ -12,21 +12,20 @@ BLOCK_SIZE = 128
 
 class DecryptionStream():
     #possibly do something with hmac later - place holder for now
-    def __init__(self, passphrase, iv):
+    def __init__(self, passphrase, salt, iv):
         self.iv = iv
         self.data = None
-        key = self.derive_key(passphrase, iv)
+        key = self.derive_key(passphrase, salt)
         derived = HDKF(key, b"Backup Export", 64)
         self.cipher_key = derived[:32]
         self.mac_key = derived[32::]
-        self.count = 0
+        self.count = int.from_bytes(self.iv, byteorder='big')
         self.mac = hmac.new(self.mac_key,
                             msg=None,
                             digestmod=sha256)
 
     def derive_key(self, passphrase, salt):
         digest = sha512()
-        digest.update(self.iv)
 
         if " " in passphrase:
             passphrase = passphrase.replace(" ", "")
@@ -34,6 +33,7 @@ class DecryptionStream():
         passphrase_bytes = passphrase.encode()
         pass_hash = passphrase_bytes
 
+        digest.update(salt)
         for i in range(250000):
             #possibly set up a progress counter here
             digest.update(pass_hash)
@@ -52,10 +52,9 @@ class DecryptionStream():
                          AES.MODE_CTR,
                          counter=new_counter)
 
-        print(self.cipher_key, iv_in_int)
         decrypted_bytes = cipher.decrypt(self.data)
-        print(decrypted_bytes)
         self.clear_data()
+        
         return decrypted_bytes
 
     def increase_iv(self):

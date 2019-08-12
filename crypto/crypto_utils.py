@@ -18,7 +18,7 @@ def extract(salt, input_key):
     return mac.digest()
 
 def expand(prk, info, output_size): #possibly remove all counters: must test
-    iterations = math.ceil(output_size / HASH_OUTPUT_SIZE)
+    iterations = int(math.ceil(output_size / HASH_OUTPUT_SIZE))
     mixin = bytes([])
     remaining_bytes = output_size
     byte_results = b''

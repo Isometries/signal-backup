@@ -1,1 +1,7 @@
 todo.txt 
+__pycache__
+*.pyc
+backup_pb2.py
+test.backup
+test2.backup
+proto_test.py
